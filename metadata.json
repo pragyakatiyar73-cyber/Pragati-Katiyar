@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Katiyar Medical Store",
+  "description": "Local medical website for Katiyar medical store in Kanpur Nagar.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
