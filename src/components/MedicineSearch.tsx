@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { collection, query, getDocs, orderBy, limit } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 import { Search, Package, AlertCircle, Loader2 } from 'lucide-react';
 import { inventoryMedicines } from '../data';
 
@@ -7,23 +9,49 @@ export default function MedicineSearch() {
   const [medicines, setMedicines] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchTerm.trim()) return;
     
     setIsLoading(true);
     setHasSearched(true);
+    setErrorMsg('');
     
-    setTimeout(() => {
-      const filtered = inventoryMedicines.filter(med => 
-        med.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        (med.category && med.category.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
+    try {
+      // 1. Get matches from Firestore (case-insensitive substring on client side for now, or just exact match)
+      // Since Firebase doesn't support case-insensitive full-text search easily, we'll fetch a batch and filter
+      const q = query(collection(db, 'medicines'), orderBy('name'), limit(150));
+      const snapshot = await getDocs(q);
+      const dbMedicines = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
       
-      setMedicines(filtered);
+      const filteredDb = dbMedicines.filter(med => 
+        med.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        med.category?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+
+      // 2. Get matches from our local static data just in case
+      const filteredLocal = inventoryMedicines.filter(med => 
+        med.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        med.category?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+
+      // 3. Merge and remove duplicates by name
+      const combined = [...filteredDb, ...filteredLocal];
+      const uniqueMedicines = Array.from(new Map(combined.map(m => [m.name?.toLowerCase(), m])).values());
+      
+      setMedicines(uniqueMedicines);
+    } catch (error: any) {
+      console.error("Error searching medicines:", error);
+      if (error?.message && error.message.includes('permissions')) {
+        setErrorMsg("Missing Permissions: Please allow read access to 'medicines' in your Firestore Security Rules.");
+      } else {
+        setErrorMsg("Failed to search medicines. Please try again later.");
+      }
+    } finally {
       setIsLoading(false);
-    }, 500); // simulate network request for smooth UX
+    }
   };
 
   return (
@@ -57,7 +85,7 @@ export default function MedicineSearch() {
           </form>
         </div>
 
-        {hasSearched && !isLoading && (
+        {hasSearched && !isLoading && !errorMsg && (
           <div className="mb-6 flex justify-between items-center">
             <h2 className="text-lg font-semibold text-slate-800">
               Search Results
@@ -69,6 +97,16 @@ export default function MedicineSearch() {
         )}
 
         <div className="space-y-4">
+          {errorMsg && (
+            <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl flex items-start gap-3">
+              <AlertCircle size={20} className="shrink-0 mt-0.5" />
+              <div>
+                <h4 className="font-bold">Error</h4>
+                <p className="text-sm">{errorMsg}</p>
+              </div>
+            </div>
+          )}
+
           {isLoading && !hasSearched && (
             <div className="text-center py-12">
               <Loader2 size={32} className="animate-spin mx-auto text-brand-600 mb-4" />
