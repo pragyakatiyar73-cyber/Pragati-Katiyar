@@ -67,6 +67,53 @@ export function HealthConcerns() {
   );
 }
 
+export function StoreVideoPromo() {
+  return (
+    <section id="promo-video" className="py-24 bg-slate-50 border-t border-slate-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl font-bold text-slate-900 mb-4">A Legacy of Trust & Care</h2>
+          <p className="text-slate-600 max-w-2xl mx-auto text-lg">Serving the local community of Chaubepur with dedication for over two years.</p>
+        </div>
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="order-2 lg:order-1">
+             <h3 className="text-2xl font-bold text-slate-900 mb-4">
+               Katiyar Medical Store<br/>
+               <span className="text-brand-600">आपकी सेहत, हमारी जिम्मेदारी</span>
+             </h3>
+             <p className="text-slate-600 mb-6 leading-relaxed">
+               For over two years, Katiyar Medical Store at Rautapur Bamba, Bela Road, Chaubepur has been serving the community selflessly. Every customer here is treated like family. We are not just a medical store, but a trusted companion for your entire family's health.
+             </p>
+             <p className="text-slate-600 mb-6 leading-relaxed">
+               All types of generic and branded medicines are available with full quality guarantee, along with special discounts from <strong>5% to 10%</strong> on every medicine. 
+             </p>
+             <div className="bg-white rounded-2xl p-6 shadow-sm border border-brand-100">
+                <p className="font-bold text-brand-800 text-lg">
+                  हमारा वादा है: सही दवा, सही सलाह, और बचत भी बेमिसाल!
+                </p>
+             </div>
+          </div>
+          <div className="order-1 lg:order-2">
+            <div className="relative aspect-video rounded-3xl overflow-hidden shadow-2xl bg-slate-900 border-8 border-white group">
+              <video 
+                className="w-full h-full object-cover" 
+                controls 
+                src="/promo-video.mp4"
+                title="Store Promo Video"
+              >
+                Your browser does not support the video tag.
+              </video>
+            </div>
+            <p className="text-sm text-slate-500 mt-4 text-center">
+              * Video placeholder. Add <code className="text-xs bg-slate-100 px-1 py-0.5 rounded">promo-video.mp4</code> to your public folder.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 import ownerPhoto from '../assets/images/shivam_katiyar_pharmacy_1780477486293.png';
 
 export function AboutOwner() {

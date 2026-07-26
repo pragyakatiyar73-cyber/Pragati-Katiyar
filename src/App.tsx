@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import Services from './components/Services';
-import { Categories, HealthConcerns, AboutOwner } from './components/StoreSections';
+import { Categories, HealthConcerns, AboutOwner, StoreVideoPromo } from './components/StoreSections';
 import Consultation from './components/Consultation';
 import Feedback from './components/Feedback';
 import ContactUs from './components/ContactUs';
@@ -59,6 +59,7 @@ export default function App() {
         <Categories />
         <HealthConcerns />
         <AboutOwner />
+        <StoreVideoPromo />
         <Consultation />
         <Feedback />
         <ContactUs />

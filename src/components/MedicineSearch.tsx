@@ -1,58 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { collection, query, getDocs, orderBy, limit, startAt, endAt } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import React, { useState } from 'react';
 import { Search, Package, AlertCircle, Loader2 } from 'lucide-react';
+import { inventoryMedicines } from '../data';
 
 export default function MedicineSearch() {
   const [searchTerm, setSearchTerm] = useState('');
   const [medicines, setMedicines] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  const [allMedicines, setAllMedicines] = useState<any[]>([]); // fallback if we want client side search
 
-  // Fetch some initial generic medicines or just wait for search
-  
-  const handleSearch = async (e: React.FormEvent) => {
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchTerm.trim()) return;
     
     setIsLoading(true);
     setHasSearched(true);
     
-    try {
-      // For simple substring search without Algolia/etc, we fetch all and filter client side
-      // Or we can just use startAt/endAt for prefix search
-      const q = query(
-        collection(db, 'medicines'),
-        orderBy('name'),
-        startAt(searchTerm.toUpperCase()),
-        endAt(searchTerm.toUpperCase() + '\uf8ff'),
-        limit(20)
-      );
-      const snapshot = await getDocs(q);
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      
-      // If we want Case Insensitive substring:
-      // Firebase doesn't do case-insensitive substring search well natively. 
-      // Better to fetch a larger batch and filter in memory if the dataset isn't huge.
-      const allQ = query(collection(db, 'medicines'), orderBy('name'), limit(100));
-      const allSnapshot = await getDocs(allQ);
-      const allData = allSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
-      
-      const filtered = allData.filter(med => 
+    setTimeout(() => {
+      const filtered = inventoryMedicines.filter(med => 
         med.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        (med.description && med.description.toLowerCase().includes(searchTerm.toLowerCase()))
+        (med.category && med.category.toLowerCase().includes(searchTerm.toLowerCase()))
       );
       
       setMedicines(filtered);
-    } catch (error: any) {
-      console.error("Error searching medicines", error);
-      if (error?.message && error.message.includes('permissions')) {
-        alert("Missing Permissions: Please allow read/write to 'medicines' in your Firestore Security Rules.");
-      }
-    } finally {
       setIsLoading(false);
-    }
+    }, 500); // simulate network request for smooth UX
   };
 
   return (
