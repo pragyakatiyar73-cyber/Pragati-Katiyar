@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { collection, query, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Search, Package, AlertCircle, Loader2 } from 'lucide-react';
@@ -6,52 +6,62 @@ import { inventoryMedicines } from '../data';
 
 export default function MedicineSearch() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [medicines, setMedicines] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [allMedicines, setAllMedicines] = useState<any[]>([]);
+  const [displayedMedicines, setDisplayedMedicines] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [hasSearched, setHasSearched] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchTerm.trim()) return;
-    
-    setIsLoading(true);
-    setHasSearched(true);
-    setErrorMsg('');
-    
-    try {
-      // 1. Get matches from Firestore (case-insensitive substring on client side for now, or just exact match)
-      // Since Firebase doesn't support case-insensitive full-text search easily, we'll fetch a batch and filter
-      const q = query(collection(db, 'medicines'), orderBy('name'), limit(150));
-      const snapshot = await getDocs(q);
-      const dbMedicines = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
-      
-      const filteredDb = dbMedicines.filter(med => 
-        med.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        med.category?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+  useEffect(() => {
+    const fetchMedicines = async () => {
+      setIsLoading(true);
+      setErrorMsg('');
+      try {
+        const q = query(collection(db, 'medicines'), orderBy('name'), limit(500));
+        const snapshot = await getDocs(q);
+        const dbMedicines = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
+        
+        console.log("Fetched medicines from Firestore:", dbMedicines);
 
-      // 2. Get matches from our local static data just in case
-      const filteredLocal = inventoryMedicines.filter(med => 
-        med.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        med.category?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-
-      // 3. Merge and remove duplicates by name
-      const combined = [...filteredDb, ...filteredLocal];
-      const uniqueMedicines = Array.from(new Map(combined.map(m => [m.name?.toLowerCase(), m])).values());
-      
-      setMedicines(uniqueMedicines);
-    } catch (error: any) {
-      console.error("Error searching medicines:", error);
-      if (error?.message && error.message.includes('permissions')) {
-        setErrorMsg("Missing Permissions: Please allow read access to 'medicines' in your Firestore Security Rules.");
-      } else {
-        setErrorMsg("Failed to search medicines. Please try again later.");
+        // Merge with local inventory just in case
+        const combined = [...dbMedicines, ...inventoryMedicines];
+        const uniqueMedicines = Array.from(new Map(combined.map(m => [m.name?.toLowerCase(), m])).values());
+        
+        setAllMedicines(uniqueMedicines);
+        setDisplayedMedicines(uniqueMedicines); // Show all by default
+      } catch (error: any) {
+        console.error("Error fetching medicines:", error);
+        if (error?.message && error.message.includes('permissions')) {
+          setErrorMsg("Missing Permissions: Please allow read access to 'medicines' in your Firestore Security Rules.");
+        } else {
+          setErrorMsg("Failed to load medicines. Please try again later.");
+        }
+        // Fallback to local data
+        setAllMedicines(inventoryMedicines);
+        setDisplayedMedicines(inventoryMedicines);
+      } finally {
+        setIsLoading(false);
       }
-    } finally {
-      setIsLoading(false);
+    };
+
+    fetchMedicines();
+  }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setHasSearched(true);
+    
+    if (!searchTerm.trim()) {
+      setDisplayedMedicines(allMedicines);
+      return;
     }
+
+    const filtered = allMedicines.filter(med => 
+      med.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      med.category?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    setDisplayedMedicines(filtered);
   };
 
   return (
@@ -76,7 +86,7 @@ export default function MedicineSearch() {
             />
             <button
               type="submit"
-              disabled={isLoading || !searchTerm.trim()}
+              disabled={isLoading}
               className="bg-brand-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {isLoading ? <Loader2 size={18} className="animate-spin" /> : null}
@@ -85,13 +95,13 @@ export default function MedicineSearch() {
           </form>
         </div>
 
-        {hasSearched && !isLoading && !errorMsg && (
+        {!isLoading && !errorMsg && (
           <div className="mb-6 flex justify-between items-center">
             <h2 className="text-lg font-semibold text-slate-800">
-              Search Results
+              {hasSearched && searchTerm.trim() ? 'Search Results' : 'Available Medicines'}
             </h2>
             <span className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-              {medicines.length} found
+              {displayedMedicines.length} found
             </span>
           </div>
         )}
@@ -107,16 +117,16 @@ export default function MedicineSearch() {
             </div>
           )}
 
-          {isLoading && !hasSearched && (
+          {isLoading && (
             <div className="text-center py-12">
               <Loader2 size={32} className="animate-spin mx-auto text-brand-600 mb-4" />
-              <p className="text-slate-500">Searching inventory...</p>
+              <p className="text-slate-500">Loading medicines...</p>
             </div>
           )}
 
-          {!isLoading && hasSearched && (
-            medicines.length > 0 ? (
-              medicines.map((med) => (
+          {!isLoading && (
+            displayedMedicines.length > 0 ? (
+              displayedMedicines.map((med) => (
                 <div key={med.id} className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-start gap-4">
                   <div className="bg-brand-50 p-3 rounded-lg text-brand-600 shrink-0">
                     <Package size={24} />
