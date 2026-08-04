@@ -31,7 +31,8 @@ export default function MedicineSearch() {
           ...doc.data()
         })) as any[];
 
-        console.log('Firestore medicines:', dbMedicines);
+        console.log('Firestore medicines:', dbMedicines.length);
+        console.log('Local medicines:', inventoryMedicines.length);
 
         const combined = [
           ...dbMedicines,
@@ -41,11 +42,13 @@ export default function MedicineSearch() {
         const uniqueMedicines = Array.from(
           new Map(
             combined.map(medicine => [
-              medicine.name?.toLowerCase(),
+              (medicine.name || '').trim().toLowerCase(),
               medicine
             ])
           ).values()
         );
+
+        console.log('Merged medicines:', uniqueMedicines.length);
 
         setAllMedicines(uniqueMedicines);
         setDisplayedMedicines(uniqueMedicines);
@@ -80,15 +83,21 @@ export default function MedicineSearch() {
     e.preventDefault();
     setHasSearched(true);
     
-    if (!searchTerm.trim()) {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+
+    if (!normalizedSearch) {
       setDisplayedMedicines(allMedicines);
       return;
     }
 
-    const filtered = allMedicines.filter(med => 
-      med.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      med.category?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filtered = allMedicines.filter(med => {
+      const name = (med.name || '').trim().toLowerCase();
+      const category = (med.category || '').trim().toLowerCase();
+      return name.includes(normalizedSearch) || category.includes(normalizedSearch);
+    });
+    
+    console.log('Search term:', normalizedSearch);
+    console.log('Search results:', filtered.length);
     
     setDisplayedMedicines(filtered);
   };
