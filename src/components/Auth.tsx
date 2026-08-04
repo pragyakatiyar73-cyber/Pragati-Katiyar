@@ -5,7 +5,7 @@ import { LogIn, ArrowLeft, CheckCircle2, ShieldCheck, UserPlus } from 'lucide-re
 import { motion } from 'motion/react';
 
 export default function Auth() {
-  const [isSignUp, setIsSignUp] = useState(false);
+const [isSignUp, setIsSignUp] = useState(true);
   const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '' });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
