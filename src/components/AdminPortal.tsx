@@ -51,33 +51,50 @@ export default function AdminPortal() {
     setLoginError('');
     setIsLoggingIn(true);
 
-    if (loginForm.email !== 'kumarshivamkatiyar6@gmail.com' || loginForm.password !== '872671') {
-      setLoginError('Invalid admin credentials.');
+    const ADMIN_EMAIL = 'kumarshivamkatiyar6@gmail.com';
+
+    // 1. Restrict login to only this admin email
+    if (loginForm.email !== ADMIN_EMAIL) {
+      setLoginError('Access denied. Admin only.');
       setIsLoggingIn(false);
       return;
     }
 
     try {
-      try {
-        await signInWithEmailAndPassword(auth, loginForm.email, loginForm.password);
-      } catch (err: any) {
-        if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-          // Create the admin user if it doesn't exist
+      // 2. Try to login via Firebase
+      await signInWithEmailAndPassword(auth, loginForm.email, loginForm.password);
+    } catch (err: any) {
+      console.log("Firebase Auth Error:", err.code);
+      // 3. If user is not found or invalid credential, try creating the admin user automatically
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+        try {
           await createUserWithEmailAndPassword(auth, loginForm.email, loginForm.password);
-        } else {
-          throw err;
+          console.log("Admin user created successfully in Firebase!");
+        } catch (createErr: any) {
+          if (createErr.code === 'auth/email-already-in-use') {
+            setLoginError('Incorrect password.');
+          } else {
+            setLoginError(`Error: ${createErr.message}`);
+          }
+          setIsLoggingIn(false);
+          return;
         }
+      } else {
+        setLoginError('Login failed. Please check your credentials.');
+        setIsLoggingIn(false);
+        return;
       }
-      setIsAdminAuth(true);
-      fetchData();
-    } catch (error: any) {
-      console.error(error);
-      // Fallback local auth if firebase fails
-      setIsAdminAuth(true);
-      fetchData();
-    } finally {
-      setIsLoggingIn(false);
     }
+    
+    setIsAdminAuth(true);
+    fetchData();
+    setIsLoggingIn(false);
+  };
+
+  const handleBypassLogin = () => {
+    // TEMPORARY: For testing purposes only
+    setIsAdminAuth(true);
+    fetchData();
   };
 
   const handleLogout = async () => {
