@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Search, Package, AlertCircle, Loader2 } from 'lucide-react';
-import { inventoryMedicines } from '../data';
 
 export default function MedicineSearch() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -19,13 +18,27 @@ export default function MedicineSearch() {
       try {
         const q = query(collection(db, 'medicines'), orderBy('name'), limit(500));
         const snapshot = await getDocs(q);
-        const dbMedicines = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
+        const dbMedicines = snapshot.docs.map(doc => {
+          const data = doc.data();
+          // Map 'available' to 'inStock' if 'inStock' is missing, default to true if both are missing
+          let isAvailable = true;
+          if (data.inStock !== undefined) {
+            isAvailable = data.inStock;
+          } else if (data.available !== undefined) {
+            isAvailable = data.available;
+          }
+
+          return { 
+            id: doc.id, 
+            ...data,
+            inStock: isAvailable
+          } as any;
+        });
         
         console.log("Fetched medicines from Firestore:", dbMedicines);
 
-        // Merge with local inventory just in case
-        const combined = [...dbMedicines, ...inventoryMedicines];
-        const uniqueMedicines = Array.from(new Map(combined.map(m => [m.name?.toLowerCase(), m])).values());
+        // Remove duplicates by name just in case
+        const uniqueMedicines = Array.from(new Map(dbMedicines.map(m => [m.name?.toLowerCase(), m])).values());
         
         setAllMedicines(uniqueMedicines);
         setDisplayedMedicines(uniqueMedicines); // Show all by default
@@ -33,12 +46,13 @@ export default function MedicineSearch() {
         console.error("Error fetching medicines:", error);
         if (error?.message && error.message.includes('permissions')) {
           setErrorMsg("Missing Permissions: Please allow read access to 'medicines' in your Firestore Security Rules.");
+        } else if (error?.message && error.message.includes('offline')) {
+          setErrorMsg("Could not connect to Firestore. If you haven't created the database yet, go to Firebase Console -> Build -> Firestore Database and create it.");
         } else {
-          setErrorMsg("Failed to load medicines. Please try again later.");
+          setErrorMsg("Failed to load medicines. Please check your network connection and try again.");
         }
-        // Fallback to local data
-        setAllMedicines(inventoryMedicines);
-        setDisplayedMedicines(inventoryMedicines);
+        setAllMedicines([]);
+        setDisplayedMedicines([]);
       } finally {
         setIsLoading(false);
       }
