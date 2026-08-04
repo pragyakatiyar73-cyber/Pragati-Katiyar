@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Search, Package, AlertCircle, Loader2 } from 'lucide-react';
-import { inventoryMedicines } from '../lib/importMedicines';
 
 export default function MedicineSearch() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -21,7 +20,7 @@ export default function MedicineSearch() {
         const q = query(
           collection(db, 'medicines'),
           orderBy('name'),
-          limit(500)
+          limit(1000)
         );
 
         const snapshot = await getDocs(q);
@@ -32,16 +31,10 @@ export default function MedicineSearch() {
         })) as any[];
 
         console.log('Firestore medicines:', dbMedicines.length);
-        console.log('Local medicines:', inventoryMedicines.length);
-
-        const combined = [
-          ...dbMedicines,
-          ...inventoryMedicines
-        ];
 
         const uniqueMedicines = Array.from(
           new Map(
-            combined.map(medicine => [
+            dbMedicines.map(medicine => [
               (medicine.name || '').trim().toLowerCase(),
               medicine
             ])
@@ -56,19 +49,13 @@ export default function MedicineSearch() {
       } catch (error: any) {
         console.error('Firestore medicine fetch error:', error);
 
-        // Never leave the medicine list blank if local inventory exists
-        const fallbackMedicines = [...inventoryMedicines];
-
-        setAllMedicines(fallbackMedicines);
-        setDisplayedMedicines(fallbackMedicines);
-
         if (error?.code === 'permission-denied') {
           setErrorMsg(
             'Firebase permission denied. Please check Firestore Security Rules.'
           );
         } else {
           setErrorMsg(
-            'Online medicine database is temporarily unavailable. Showing available medicines.'
+            'Online medicine database is temporarily unavailable. Please try again later.'
           );
         }
       } finally {

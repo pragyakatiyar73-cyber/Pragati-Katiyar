@@ -3,7 +3,6 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } f
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { ShieldCheck, Calendar, Clock, CheckCircle, Trash2, Plus, X, LogOut, Loader2, User, Package, DownloadCloud } from 'lucide-react';
-import { seedMedicinesToFirestore } from '../lib/importMedicines';
 
 export default function AdminPortal() {
   const [isAdminAuth, setIsAdminAuth] = useState(false);
@@ -23,7 +22,6 @@ export default function AdminPortal() {
   const [newBooking, setNewBooking] = useState({ name: '', phone: '', email: '', issue: '', status: 'pending' });
   const [newMedicine, setNewMedicine] = useState({ name: '', description: '', price: '', category: '', inStock: true });
 
-  const [isImporting, setIsImporting] = useState(false);
 
   // Check if already logged in as admin
   useEffect(() => {
@@ -184,21 +182,6 @@ export default function AdminPortal() {
       } else {
         alert("Failed to add medicine.");
       }
-    }
-  };
-
-  const handleImport = async () => {
-    if (!window.confirm("Are you sure you want to import the default list of medicines? This will add missing medicines.")) return;
-    setIsImporting(true);
-    try {
-      const count = await seedMedicinesToFirestore();
-      alert(`Successfully imported ${count} new medicines!`);
-      fetchData();
-    } catch (error: any) {
-      console.error("Error importing medicines:", error);
-      alert(`Failed to import medicines: ${error.message}`);
-    } finally {
-      setIsImporting(false);
     }
   };
 
@@ -526,14 +509,6 @@ export default function AdminPortal() {
               Medicine Inventory
             </h2>
             <div className="flex gap-4">
-              <button 
-                onClick={handleImport}
-                disabled={isImporting}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-indigo-700 flex items-center gap-1 disabled:opacity-50"
-              >
-                {isImporting ? <Loader2 size={16} className="animate-spin" /> : <DownloadCloud size={16} />} 
-                {isImporting ? 'Importing...' : 'Import List'}
-              </button>
               <button onClick={() => setShowAddMedModal(true)} className="bg-brand-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-brand-700 flex items-center gap-1">
                 <Plus size={16} /> Add Medicine
               </button>
