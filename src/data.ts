@@ -1,41 +1,35 @@
-import { Pill, Activity, Syringe, TestTube, Leaf, Droplet, Heart, Apple, Coffee, Store, Sun } from 'lucide-react';
+import { HeartPulse, FileText, Phone, MapPin, Pill, Activity, Stethoscope, Baby, Smile, Heart, User, Clock } from 'lucide-react';
 
 export const storeInfo = {
   name: "Katiyar Medical Store",
-  address: "Rautapur Bamba, Bela Road, Chaubepur, Kanpur Nagar",
-  phone: "8726713648",
-  email: "katiyarmedical17@gmail.com",
-  hours: "10:00 AM - 8:00 PM (Open Daily 10 Hours)",
-  owner: "Drx. Shivam Katiyar",
-  degree: "B.Pharm (Pharmacist)"
+  owner: "Shivam Katiyar",
+  address: "Near S.P Office, Kutchery Road, Kannauj (U.P) - 209725",
+  phone: "+91-8726715454",
+  email: "kumarshivamkatiyar6@gmail.com",
+  timings: "9:00 AM to 10:00 PM (Everyday)",
+  hours: "9:00 AM to 10:00 PM (Everyday)",
+  about: "Katiyar Medical Store is a trusted pharmacy in Kannauj, providing authentic medicines, healthcare products, and consultation bookings. Led by Shivam Katiyar, we prioritize your health with quick service and reliable guidance.",
+  degree: "D.Pharma, B.Pharma"
 };
 
 export const services = [
-  { id: 1, title: 'Prescription Medicines', icon: Pill, description: 'Authentic prescription medications filled by certified pharmacists.' },
-  { id: 2, title: 'Over-the-Counter', icon: Activity, description: 'Common medicines for quick relief from minor ailments.' },
-  { id: 3, title: 'Health Supplements', icon: Heart, description: 'Vitamins and dietary supplements for everyday wellness.' },
-  { id: 4, title: 'Diabetes Care', icon: Syringe, description: 'Insulin, blood sugar monitors, and specialized care products.' },
-  { id: 5, title: 'Lab Tests', icon: TestTube, description: 'Sample collection and diagnostic health testing services.' },
-  { id: 6, title: 'In-Store Pickup', icon: Store, description: 'Order by phone and pick up directly at the store. (No home delivery available)' }
+  { id: 1, title: 'Authentic Medicines', description: '100% genuine prescribed and OTC medicines.', icon: Pill },
+  { id: 2, title: 'Doctor Consultations', description: 'Book appointments with top doctors easily.', icon: Stethoscope },
+  { id: 3, title: 'Health Supplements', description: 'Vitamins, proteins, and daily health supplements.', icon: Activity },
 ];
 
 export const categories = [
-  { name: 'Vitamin Store', icon: Heart },
-  { name: 'Health Store', icon: Activity },
-  { name: 'Summer Store', icon: Sun },
-  { name: 'Homeopathy Care', icon: Droplet },
-  { name: 'Ayurvedic Care', icon: Leaf },
-  { name: 'Glucon-D & Energy', icon: Coffee },
-  { name: 'Personal Care', icon: Heart },
-  { name: 'Healthy Food & Drinks', icon: Apple }
+  { name: 'Tablets & Capsules', image: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&q=80', icon: Pill },
+  { name: 'Syrups & Liquids', image: 'https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=400&q=80', icon: Activity },
+  { name: 'Creams & Ointments', image: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&q=80', icon: FileText },
+  { name: 'Baby Care', image: 'https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400&q=80', icon: Baby }
 ];
 
 export const healthConcerns = [
-  { name: 'Fever & Cold', image: 'https://images.unsplash.com/photo-1584483766114-2cea6facdf57?auto=format&fit=crop&q=80&w=400&h=300' },
-  { name: 'Skin Care', image: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&q=80&w=400&h=300' },
-  { name: 'Bone & Joint', image: 'https://images.unsplash.com/photo-1581093588401-fbb62a02f120?auto=format&fit=crop&q=80&w=400&h=300' },
-  { name: 'Heart Health', image: 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&q=80&w=400&h=300' },
-  { name: 'Stomach Care', image: 'https://images.unsplash.com/photo-1576602976047-174e508eb6d4?auto=format&fit=crop&q=80&w=400&h=300' },
-  { name: 'Diabetes Management', image: 'https://images.unsplash.com/photo-1526256262350-7da7584cf5eb?auto=format&fit=crop&q=80&w=400&h=300' },
+  { name: 'Diabetes Care', icon: HeartPulse, color: 'bg-red-50 text-red-600', image: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=400&q=80' },
+  { name: 'Cardiac Care', icon: Heart, color: 'bg-rose-50 text-rose-600', image: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=400&q=80' },
+  { name: 'Stomach Care', icon: Activity, color: 'bg-orange-50 text-orange-600', image: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=400&q=80' },
+  { name: 'Bone & Joint', icon: User, color: 'bg-blue-50 text-blue-600', image: 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=400&q=80' },
+  { name: 'Baby Care', icon: Baby, color: 'bg-purple-50 text-purple-600', image: 'https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400&q=80' },
+  { name: 'Skin Care', icon: Smile, color: 'bg-pink-50 text-pink-600', image: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&q=80' },
 ];
-
