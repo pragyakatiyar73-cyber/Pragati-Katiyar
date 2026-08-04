@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Search, Package, AlertCircle, Loader2 } from 'lucide-react';
+import { inventoryMedicines } from '../lib/importMedicines';
 
 export default function MedicineSearch() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -15,44 +16,58 @@ export default function MedicineSearch() {
     const fetchMedicines = async () => {
       setIsLoading(true);
       setErrorMsg('');
+
       try {
-        const q = query(collection(db, 'medicines'), orderBy('name'), limit(500));
+        const q = query(
+          collection(db, 'medicines'),
+          orderBy('name'),
+          limit(500)
+        );
+
         const snapshot = await getDocs(q);
-        const dbMedicines = snapshot.docs.map(doc => {
-          const data = doc.data();
-          // Map 'available' to 'inStock' if 'inStock' is missing, default to true if both are missing
-          let isAvailable = true;
-          if (data.inStock !== undefined) {
-            isAvailable = data.inStock;
-          } else if (data.available !== undefined) {
-            isAvailable = data.available;
-          }
 
-          return { 
-            id: doc.id, 
-            ...data,
-            inStock: isAvailable
-          } as any;
-        });
-        
-        console.log("Fetched medicines from Firestore:", dbMedicines);
+        const dbMedicines = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as any[];
 
-        // Remove duplicates by name just in case
-        const uniqueMedicines = Array.from(new Map(dbMedicines.map(m => [m.name?.toLowerCase(), m])).values());
-        
+        console.log('Firestore medicines:', dbMedicines);
+
+        const combined = [
+          ...dbMedicines,
+          ...inventoryMedicines
+        ];
+
+        const uniqueMedicines = Array.from(
+          new Map(
+            combined.map(medicine => [
+              medicine.name?.toLowerCase(),
+              medicine
+            ])
+          ).values()
+        );
+
         setAllMedicines(uniqueMedicines);
-        setDisplayedMedicines(uniqueMedicines); // Show all by default
+        setDisplayedMedicines(uniqueMedicines);
+
       } catch (error: any) {
-        console.error("Error fetching medicines:", error);
-        if (error?.message && error.message.includes('permissions')) {
-          setErrorMsg("Missing Permissions: Please allow read access to 'medicines' in your Firestore Security Rules.");
-        } else if (error?.message && error.message.includes('offline')) {
-          setErrorMsg("Could not connect to Firestore. If you haven't created the database yet, go to Firebase Console -> Build -> Firestore Database and create it.");
+        console.error('Firestore medicine fetch error:', error);
+
+        // Never leave the medicine list blank if local inventory exists
+        const fallbackMedicines = [...inventoryMedicines];
+
+        setAllMedicines(fallbackMedicines);
+        setDisplayedMedicines(fallbackMedicines);
+
+        if (error?.code === 'permission-denied') {
+          setErrorMsg(
+            'Firebase permission denied. Please check Firestore Security Rules.'
+          );
         } else {
-          setErrorMsg("Failed to load medicines. Please check your network connection and try again.");
+          setErrorMsg(
+            'Online medicine database is temporarily unavailable. Showing available medicines.'
+          );
         }
-        setAllMedicines([]);
-        setDisplayedMedicines([]);
       } finally {
         setIsLoading(false);
       }
@@ -140,8 +155,8 @@ export default function MedicineSearch() {
 
           {!isLoading && (
             displayedMedicines.length > 0 ? (
-              displayedMedicines.map((med) => (
-                <div key={med.id} className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-start gap-4">
+              displayedMedicines.map((med, idx) => (
+                <div key={med.id || med.name || idx} className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-start gap-4">
                   <div className="bg-brand-50 p-3 rounded-lg text-brand-600 shrink-0">
                     <Package size={24} />
                   </div>

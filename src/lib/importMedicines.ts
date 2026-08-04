@@ -1,7 +1,7 @@
 import { writeBatch, collection, doc, serverTimestamp, getDocs } from 'firebase/firestore';
 import { db } from './firebase';
 
-const medicinesList = [
+export const inventoryMedicines = [
   // Previous medicines
   { name: 'D S P TAB', category: 'Tablets', stock: 20 },
   { name: 'NEWARROW-B12 FORTE', category: 'Tablets', stock: 5 },
@@ -210,7 +210,7 @@ export async function seedMedicinesToFirestore() {
 
   let count = 0;
   // Firestore limit is 500 writes per batch. We have < 500 total, so it's safe.
-  for (const med of medicinesList) {
+  for (const med of inventoryMedicines) {
     if (!existingNames.has(med.name.toLowerCase())) {
       const docRef = doc(collectionRef);
       batch.set(docRef, {
