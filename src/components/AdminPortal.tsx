@@ -296,6 +296,14 @@ export default function AdminPortal() {
             >
               {isLoggingIn ? <Loader2 size={18} className="animate-spin" /> : 'Access Dashboard'}
             </button>
+            
+            <button
+              type="button"
+              onClick={handleBypassLogin}
+              className="w-full mt-2 text-center text-brand-600 hover:text-brand-800 text-sm font-bold bg-brand-50 hover:bg-brand-100 py-3 rounded-xl transition-all"
+            >
+              Test Login (Bypass)
+            </button>
           </form>
           
           <button onClick={() => window.location.hash = ''} className="w-full mt-4 text-center text-slate-500 hover:text-brand-600 text-sm font-medium">
@@ -386,6 +394,16 @@ export default function AdminPortal() {
             }`}
           >
             Customer Feedbacks
+          </button>
+          <button
+            onClick={() => setActiveTab('inventory')}
+            className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+              activeTab === 'inventory'
+                ? 'bg-slate-900 text-white shadow-md'
+                : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'
+            }`}
+          >
+            Medicine Inventory
           </button>
         </div>
 
