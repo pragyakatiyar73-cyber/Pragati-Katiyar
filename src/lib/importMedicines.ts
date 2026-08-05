@@ -156,7 +156,7 @@ const rawMedicines = [
   { id: 131, name: "MAGENTA 20ML INJ", category: "Injections / Ampoules", quantity: 10 },
   { id: 132, name: "MERIDECA INJ. 20ML", category: "Injections / Ampoules", quantity: 5 },
   { id: 133, name: "T.T BETT INJ", category: "Injections / Ampoules", quantity: 20 },
-  { id: 134, name: "ALMOX 250 INJ", category: "Injections / Ampoules", quantity: 20 },
+  { id: 134, name: "ALMOXINJ 250 ", category: "Injections / Ampoules", quantity: 20 },
   { id: 135, name: "DEXASONE INJ. 2ML", category: "Injections / Ampoules", quantity: 12 },
 ];
 
